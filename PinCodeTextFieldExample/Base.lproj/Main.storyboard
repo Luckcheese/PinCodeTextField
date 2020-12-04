@@ -22,18 +22,14 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9MF-iO-F1j" customClass="PinCodeTextField" customModule="PinCodeTextField" customModuleProvider="target">
-                                <rect key="frame" x="67" y="80" width="240" height="50"/>
+                                <rect key="frame" x="83.5" y="60" width="208" height="49"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="50" id="GeH-pK-vdf"/>
-                                    <constraint firstAttribute="width" constant="240" id="PbI-fa-Xh0"/>
-                                </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="color" keyPath="textColor">
                                         <color key="value" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     </userDefinedRuntimeAttribute>
                                     <userDefinedRuntimeAttribute type="number" keyPath="underlineHeight">
-                                        <real key="value" value="3"/>
+                                        <real key="value" value="4"/>
                                     </userDefinedRuntimeAttribute>
                                     <userDefinedRuntimeAttribute type="number" keyPath="characterLimit">
                                         <integer key="value" value="4"/>
@@ -62,7 +58,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bFv-Dp-bxV">
-                                <rect key="frame" x="112.5" y="185" width="151" height="45.5"/>
+                                <rect key="frame" x="112" y="164" width="151" height="45.5"/>
                                 <string key="text">Please enter your 
 4-digits code</string>
                                 <fontDescription key="fontDescription" type="system" weight="light" pointSize="19"/>

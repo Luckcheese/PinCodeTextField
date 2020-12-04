@@ -261,34 +261,44 @@ import UIKit
         background.clipsToBounds = true
         return background
     }
-    
+
+    private var totalUnderlineHeight: CGFloat {
+        underlineVMargin + underlineHeight
+    }
+
+    override open var intrinsicContentSize: CGSize {
+        get {
+            let marginsCount = characterLimit - 1
+            let totalMarginsWidth = underlineHSpacing * CGFloat(marginsCount)
+            let totalUnderlinesWidth = underlineWidth * CGFloat(characterLimit)
+            let totalWidth = (totalUnderlinesWidth + totalMarginsWidth).rounded(.up)
+
+            let totalLabelHeight = font.ascender + font.descender
+            let totalHeight = (totalLabelHeight + totalUnderlineHeight).rounded(.up)
+
+            return CGSize(width: totalWidth, height: totalHeight)
+        }
+    }
+
     private func layoutCharactersAndPlaceholders() {
-        let marginsCount = characterLimit - 1
-        let totalMarginsWidth = underlineHSpacing * CGFloat(marginsCount)
-        let totalUnderlinesWidth = underlineWidth * CGFloat(characterLimit)
-        
-        var currentUnderlineX: CGFloat = bounds.width / 2 - (totalUnderlinesWidth + totalMarginsWidth) / 2
+        var currentUnderlineX: CGFloat = 0
         var currentLabelCenterX = currentUnderlineX + underlineWidth / 2
-        
-        let totalLabelHeight = font.ascender + font.descender
-        let underlineY = bounds.height / 2 + totalLabelHeight / 2 + underlineVMargin
-        
+
+        let backgroundBottom = (bounds.height - totalUnderlineHeight).rounded(.down)
+
         for i in 0..<underlines.count {
             let underline = underlines[i]
             let background = backgrounds[i]
-            underline.frame = CGRect(x: currentUnderlineX, y: underlineY, width: underlineWidth, height: underlineHeight)
-            background.frame = CGRect(x: currentUnderlineX, y: 0, width: underlineWidth, height: bounds.height)
+            underline.frame = CGRect(x: currentUnderlineX, y: backgroundBottom + underlineVMargin, width: underlineWidth, height: underlineHeight)
+            background.frame = CGRect(x: currentUnderlineX, y: 0, width: underlineWidth, height: backgroundBottom)
             currentUnderlineX += underlineWidth + underlineHSpacing
         }
         
         labels.forEach {
-            $0.sizeToFit()
-            let labelWidth = $0.bounds.width
-            let labelX = (currentLabelCenterX - labelWidth / 2).rounded(.down)
-            $0.frame = CGRect(x: labelX, y: 0, width: labelWidth, height: bounds.height)
+            let labelX = (currentLabelCenterX - underlineWidth / 2).rounded(.down)
+            $0.frame = CGRect(x: labelX, y: 0, width: underlineWidth, height: backgroundBottom)
             currentLabelCenterX += underlineWidth + underlineHSpacing
         }
-        
     }
     
     //MARK: Touches
