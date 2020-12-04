@@ -11,10 +11,11 @@ import UIKit
 
 @IBDesignable open class PinCodeTextField: UIView {
     public weak var delegate: PinCodeTextFieldDelegate?
-    
+
     //MARK: Customizable from Interface Builder
     @IBInspectable public var underlineWidth: CGFloat = 40
     @IBInspectable public var underlineHSpacing: CGFloat = 10
+    @IBInspectable public var underlineHeight: CGFloat = 3
     @IBInspectable public var underlineVMargin: CGFloat = 0
     @IBInspectable public var characterLimit: Int = 4 {
         willSet {
@@ -23,7 +24,6 @@ import UIKit
             }
         }
     }
-    @IBInspectable public var underlineHeight: CGFloat = 3
     @IBInspectable public var placeholderText: String?
     @IBInspectable public var text: String? {
         didSet {
@@ -45,6 +45,7 @@ import UIKit
     @IBInspectable public var characterBackgroundColor: UIColor = UIColor.clear
     @IBInspectable public var characterBackgroundCornerRadius: CGFloat = 0
     @IBInspectable public var highlightInputUnderline: Bool = false
+    @IBInspectable public var showBorderInsteadOfUnderline: Bool = false
     
     //MARK: Customizable from code
     public var keyboardType: UIKeyboardType = UIKeyboardType.alphabet
@@ -132,7 +133,7 @@ import UIKit
         delegate?.textFieldDidEndEditing(self)
         return super.resignFirstResponder()
     }
-    
+
     //MARK: Private
     private func updateView() {
         if needToRecreateBackgrounds() {
@@ -207,22 +208,26 @@ import UIKit
         }
     }
 
+    private func underlineColorForIndex(_ index: Int) -> UIColor {
+        !(highlightInputUnderline && isInput(index)) && isPlaceholder(index)
+            ? underlineColor
+            : updatedUnderlineColor
+    }
+
     private func updateUnderlines() {
-        for label in labels {
-            let index = labels.firstIndex(of: label) ?? 0
-            if (!highlightInputUnderline || !isInput(index)) && isPlaceholder(index) {
-                   underlines[index].backgroundColor = underlineColor
-            }
-            else{
-                underlines[index].backgroundColor = updatedUnderlineColor
-            }
+        for (index, underline) in underlines.enumerated() {
+            underline.backgroundColor = underlineColorForIndex(index)
         }
     }
     
     private func updateBackgrounds() {
-        for background in backgrounds {
+        for (index, background) in backgrounds.enumerated() {
             background.backgroundColor = characterBackgroundColor
             background.layer.cornerRadius = characterBackgroundCornerRadius
+            if showBorderInsteadOfUnderline {
+                background.layer.borderWidth = underlineHeight
+                background.layer.borderColor = underlineColorForIndex(index).cgColor
+            }
         }
     }
     
@@ -261,31 +266,50 @@ import UIKit
         background.clipsToBounds = true
         return background
     }
-    
+
+    private var totalUnderlineHeight: CGFloat {
+        underlineHeight > 0
+            ? underlineVMargin + underlineHeight
+            : CGFloat.zero
+    }
+
+    override open var intrinsicContentSize: CGSize {
+        get {
+            let marginsCount = characterLimit - 1
+            let totalMarginsWidth = underlineHSpacing * CGFloat(marginsCount)
+            let totalUnderlinesWidth = underlineWidth * CGFloat(characterLimit)
+            let totalWidth = (totalUnderlinesWidth + totalMarginsWidth).rounded(.up)
+
+            let totalLabelHeight = font.ascender + font.descender
+            let totalHeight = (totalLabelHeight + totalUnderlineHeight).rounded(.up)
+
+            return CGSize(width: totalWidth, height: totalHeight)
+        }
+    }
+
     private func layoutCharactersAndPlaceholders() {
-        let marginsCount = characterLimit - 1
-        let totalMarginsWidth = underlineHSpacing * CGFloat(marginsCount)
-        let totalUnderlinesWidth = underlineWidth * CGFloat(characterLimit)
-        
-        var currentUnderlineX: CGFloat = bounds.width / 2 - (totalUnderlinesWidth + totalMarginsWidth) / 2
+        var currentUnderlineX: CGFloat = 0
         var currentLabelCenterX = currentUnderlineX + underlineWidth / 2
-        
-        let totalLabelHeight = font.ascender + font.descender
-        let underlineY = bounds.height / 2 + totalLabelHeight / 2 + underlineVMargin
-        
+
+        let usedUnderlineHeight = showBorderInsteadOfUnderline
+            ? CGFloat.zero
+            : totalUnderlineHeight
+        let backgroundBottom = (bounds.height - usedUnderlineHeight).rounded(.down)
+
         for i in 0..<underlines.count {
-            let underline = underlines[i]
+            if !showBorderInsteadOfUnderline {
+                let underline = underlines[i]
+                underline.frame = CGRect(x: currentUnderlineX, y: backgroundBottom + underlineVMargin, width: underlineWidth, height: underlineHeight)
+            }
+
             let background = backgrounds[i]
-            underline.frame = CGRect(x: currentUnderlineX, y: underlineY, width: underlineWidth, height: underlineHeight)
-            background.frame = CGRect(x: currentUnderlineX, y: 0, width: underlineWidth, height: bounds.height)
+            background.frame = CGRect(x: currentUnderlineX, y: 0, width: underlineWidth, height: backgroundBottom)
             currentUnderlineX += underlineWidth + underlineHSpacing
         }
         
         labels.forEach {
-            $0.sizeToFit()
-            let labelWidth = $0.bounds.width
-            let labelX = (currentLabelCenterX - labelWidth / 2).rounded(.down)
-            $0.frame = CGRect(x: labelX, y: 0, width: labelWidth, height: bounds.height)
+            let labelX = (currentLabelCenterX - underlineWidth / 2).rounded(.down)
+            $0.frame = CGRect(x: labelX, y: 0, width: underlineWidth, height: backgroundBottom)
             currentLabelCenterX += underlineWidth + underlineHSpacing
         }
         
@@ -351,4 +375,3 @@ extension PinCodeTextField: UIKeyInput {
         delegate?.textFieldValueChanged(self)
     }
 }
-
