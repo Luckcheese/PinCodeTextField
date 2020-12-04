@@ -263,7 +263,9 @@ import UIKit
     }
 
     private var totalUnderlineHeight: CGFloat {
-        underlineVMargin + underlineHeight
+        underlineHeight > 0
+            ? underlineVMargin + underlineHeight
+            : CGFloat.zero
     }
 
     override open var intrinsicContentSize: CGSize {
